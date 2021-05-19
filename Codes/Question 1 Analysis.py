@@ -1,13 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Nov 17 14:29:36 2020
-
-@author: skans
-"""
-
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Nov 15 20:48:08 2020
+Created on Mon Jan  4 11:03:35 2021
 
 @author: skans
 """
@@ -26,16 +19,14 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from gensim.parsing.preprocessing import STOPWORDS
 #%%
-drivers = pd.read_excel("drivers_of_change.xlsx")
-data = pd.read_csv("formated_answers.csv")
+data = pd.read_csv("formated_answers_final.csv")
+#%%
+def name2(text):
+    text1 = re.sub("-.*","",str(text))
+    return text1
+data["Name"] = data["File Name"].apply(name2)
 #%%
 answer1 = data[['File Name',"Answer1","Name"]]
-#%%
-
-
-
-
-
 #%%
 def clean(text):
     
@@ -82,432 +73,458 @@ for name in answer1["Name"].to_list():
 df2 = pd.concat(dataframe_list)
 df2 = df2.reset_index()
 #%%
-nouns = {}
-for sentence in df2['Sent'].to_list():
-    doc = nlp(sentence)
-    for end in doc.noun_chunks:
-        end = str(end).strip()
-        if end in nouns.keys():
-            nouns[end] += 1
-        else:
-            nouns[end] = 1
+from spacy.matcher import Matcher
+dic_list = []
+local_dict = dict()
+nlp = spacy.load("en_core_web_sm")
+matcher = Matcher(nlp.vocab)
+# Add match ID "HelloWorld" with no callback and one pattern
+pattern = [ {"POS":"ADJ","OP":"*"},
+            {"POS":"ADV","DEP":"advmod","OP":"*"},
+            {"POS":"VERB","DEP":{"IN":["relcl","amod"]},"OP":"*"},
+            {"POS":"DET","DEP":"det","OP":"*"},
+            {"POS":"ADJ","OP":"*"},
+            {"POS":{"IN":["NOUN","PROPN"]},"DEP":"compound","OP":"*"},
+			{"POS":"DET","DEP":"det","OP":"*"},
+            {"POS":{"IN":["NOUN","PROPN"]},"DEP":{"IN": ["dobj", "nsubj","attr","pobj","conj","ROOT","nmod","nsubjpass","attr"]}},
+            {"POS":"ADP"},
+            {"POS":"DET","DEP":"det","OP":"*"},
+			{"POS":"ADJ","OP":"*"},
+            {"POS":"ADV","DEP":"advmod","OP":"*"},
+            {"POS":"VERB","DEP":{"IN":["relcl","amod"]},"OP":"*"},
+            {"POS":"DET","DEP":"det","OP":"*"},
+            {"POS":"ADJ","OP":"*"},
+            {"POS":{"IN":["NOUN","PROPN"]},"DEP":"compound","OP":"*"},
+			{"POS":"DET","DEP":"det","OP":"*"},
+            {"POS":{"IN":["NOUN","PROPN"]},"DEP":{"IN": ["dobj", "nsubj","attr","pobj","conj","ROOT","nmod","nsubjpass","attr"]}},
+            {"POS":"CCONJ","DEP":"cc","OP":"*"},
+            {"POS":"DET","DEP":"det","OP":"*"},
+            {"POS":"ADJ","OP":"*"},
+            {"POS":"ADV","DEP":"advmod","OP":"*"},
+            {"POS":"VERB","DEP":{"IN":["relcl","amod"]},"OP":"*"},
+            {"POS":"DET","DEP":"det","OP":"*"},
+            {"POS":"ADJ","OP":"*"},
+            {"POS":{"IN":["NOUN","PROPN"]},"DEP":"compound","OP":"*"},
+			{"POS":"DET","DEP":"det","OP":"*"},
+            {"POS":{"IN":["NOUN","PROPN"]},"DEP":{"IN": ["dobj", "nsubj","attr","pobj","conj","ROOT","nmod","nsubjpass","attr"]}}]
 
+pattern1 = [{"POS":"ADJ","OP":"*"},
+            {"POS":"ADV","DEP":"advmod","OP":"*"},
+            {"POS":"VERB","DEP":{"IN":["relcl","amod"]},"OP":"*"},
+            {"POS":"ADJ","OP":"*"},
+            {"POS":{"IN":["NOUN","PROPN"]},"DEP":"compound","OP":"*"},
+			{"POS":"DET","DEP":"det","OP":"*"},
+            {"POS":{"IN":["NOUN","PROPN"]},"DEP":{"IN": ["dobj", "nsubj","attr","pobj","conj","ROOT","nmod","nsubjpass","compound","attr"]}},
+			{"POS":"ADJ","OP":"*"},
+            {"POS":"ADV","DEP":"advmod","OP":"*"},
+            {"POS":"VERB","DEP":{"IN":["relcl","amod"]},"OP":"*"},
+            {"POS":"ADJ","OP":"*"},
+            {"POS":{"IN":["NOUN","PROPN"]},"DEP":"compound","OP":"*"},
+			{"POS":"DET","DEP":"det","OP":"*"},
+            {"POS":{"IN":["NOUN","PROPN"]},"DEP":{"IN": ["dobj", "nsubj","attr","pobj","conj","ROOT","nmod","nsubjpass","compound","attr"]}}]
+			
+pattern2 = [ {"POS":"ADJ","OP":"*"},
+            {"POS":"ADV","DEP":"advmod","OP":"*"},
+            {"POS":"VERB","DEP":{"IN":["relcl","amod"]},"OP":"*"},
+            {"POS":"ADJ","OP":"*"},
+            {"POS":{"IN":["NOUN","PROPN"]},"DEP":"compound","OP":"*"},
+			{"POS":"DET","DEP":"det","OP":"*"},
+            {"POS":{"IN":["NOUN","PROPN"]},"DEP":{"IN": ["dobj", "nsubj","attr","pobj","conj","ROOT","nmod","nsubjpass","compound","attr"]}},
+            {"POS":"ADP"},
+			{"POS":"ADJ","OP":"*"},
+            {"POS":"ADV","DEP":"advmod","OP":"*"},
+            {"POS":"VERB","DEP":{"IN":["relcl","amod"]},"OP":"*"},
+            {"POS":"ADJ","OP":"*"},
+            {"POS":{"IN":["NOUN","PROPN"]},"DEP":"compound","OP":"*"},
+            {"POS":"ADJ","OP":"*"},
+			{"POS":"ADJ","OP":"*"},
+            {"POS":"ADV","DEP":"advmod","OP":"*"},
+            {"POS":"VERB","DEP":{"IN":["relcl","amod"]},"OP":"*"},
+            {"POS":"ADJ","OP":"*"},
+            {"POS":{"IN":["NOUN","PROPN"]},"DEP":{"IN": ["dobj", "nsubj","attr","pobj","conj","ROOT","nmod","nsubjpass","compound","attr"]}}]
 
+pattern4 = [ {"POS":"ADJ","OP":"*"},
+            {"POS":"ADV","DEP":"advmod","OP":"*"},
+            {"POS":"VERB","DEP":{"IN":["relcl","amod"]},"OP":"*"},
+            {"POS":"ADJ","OP":"*"},
+            {"POS":{"IN":["NOUN","PROPN"]},"DEP":"compound","OP":"*"},
+ 			{"POS":"DET","DEP":"det","OP":"*"},
+            {"POS":{"IN":["NOUN","PROPN"]},"DEP":{"IN": ["dobj", "nsubj","attr","pobj","conj","ROOT","nmod","nsubjpass","compound","attr"]}},
+ 			]
 
-#%%
-from random import randint
-def rand_sent(df):
-    
-    index = randint(0, len(df))
-    print('Index = ',index)
-    doc = nlp(df.loc[index,'Sent'][1:])
-    displacy.render(doc, style='dep',jupyter=True)
-    
-    return index
+pattern5 = [ {"POS":"ADJ","OP":"*"},
+            {"POS":"ADV","DEP":"advmod","OP":"*"},
+            {"POS":"VERB","DEP":{"IN":["relcl","amod"]},"OP":"*"},
+            {"POS":"ADJ","OP":"*"},
+            {"POS":{"IN":["NOUN","PROPN"]},"DEP":"compound","OP":"*"},
+			{"POS":"DET","DEP":"det","OP":"*"},
+            {"POS":{"IN":["NOUN","PROPN"]},"DEP":{"IN": ["dobj", "nsubj","attr","pobj","conj","ROOT","nmod","nsubjpass","compound","attr"]}},
+            {"POS":"AUX"},
+             {"POS":"PART", "DEP":"neg","OP":"*"},
+			{"POS":"ADJ","OP":"*"},
+            {"POS":"ADV","DEP":"advmod","OP":"*"},
+            {"POS":"VERB","DEP":{"IN":["relcl","amod"]},"OP":"*"},
+            {"POS":"ADJ","OP":"*"},
+            {"POS":{"IN":["NOUN","PROPN"]},"DEP":"compound","OP":"*"},
+			{"POS":"DET","DEP":"det","OP":"*"},
+            {"POS":{"IN":["NOUN","PROPN"]},"DEP":{"IN": ["dobj", "nsubj","attr","pobj","conj","ROOT","nmod","nsubjpass","compound","attr"]}},
+            {"POS":"CCONJ","DEP":"cc","OP":"*"},
+            {"POS":"ADJ","OP":"*"},
+            {"POS":"ADV","DEP":"advmod","OP":"*"},
+            {"POS":"VERB","DEP":{"IN":["relcl","amod"]},"OP":"*"},
+            {"POS":"ADJ","OP":"*"},
+            {"POS":{"IN":["NOUN","PROPN"]},"DEP":"compound","OP":"*"},
+			{"POS":"DET","DEP":"det","OP":"*"},
+            {"POS":{"IN":["NOUN","PROPN"]},"DEP":{"IN": ["dobj", "nsubj","attr","pobj","conj","ROOT","nmod","nsubjpass","compound","attr"]}}]
+matcher.add("using_verb1", None, pattern,pattern1,pattern2, pattern4, pattern5)
 
-def output_per(df,out_col):
-    
-    result = 0
-    
-    for out in df[out_col]:
-        if len(out)!=0:
-            result+=1
-    
-    per = result/len(df)
-    per *= 100
-    
-    return per
-#%%
-def rule2_mod(text,index):
-    doc = nlp(text)
-    
-    phrase = ''
-    
-    for token in doc:
-        
-        if token.i == index:
-            
-            for subtoken in token.children:
-                if (subtoken.pos_ == 'ADJ') or (subtoken.dep_ == 'compound'):
-                    phrase += ' '+subtoken.text
-            break
-    
-    return phrase
-def rule3(text):
-    
-    doc = nlp(text)
-    
-    sent = []
-    
-    for token in doc:
-
-        # look for prepositions
-        if token.pos_=='ADP':
-
-            phrase = ''
-            
-            # if its head word is a noun
-            if token.head.pos_=='NOUN':
-                adj1 = rule2_mod(text,token.head.i)
-                phrase += ' '+token.head.text
-                # append noun and preposition to phrase
-                phrase += ' '+token.text
-
-                # check the nodes to the right of the preposition
-                for right_tok in token.rights:
-                    # append if it is a noun or proper noun
-                    if (right_tok.pos_ in ['NOUN','PROPN']):
-                        adj = rule2_mod(text,right_tok.i)
-                        phrase += adj + ' '+right_tok.text
-                
-                if len(phrase)>2:
-                    sent.append(phrase)
-                
-    return sent
-#%%
-row_list = []
-
-# df2 contains all the sentences from all the speeches
-for i in range(len(df2)):
-    sent = df2.loc[i,'Sent']
-    name = df2.loc[i,'Name']
+for index, row in df2.iterrows():
+    sent = getattr(row, "Sent")
+    name = getattr(row,"Name")
+    doc = nlp(sent)
     print(sent)
-    output = rule3(sent)
-    dict1 = {'Sent':sent,'Name':name, 'Output':output}
-    row_list.append(dict1)
-    
-df_rule3_all = pd.DataFrame(row_list)
-# check rule3 output on complete speeches
-output_per(df_rule3_all,'Output')
-#%%
-# select non-empty outputs
-df_show3 = pd.DataFrame(columns=df_rule3_all.columns)
-
-for row in range(len(df_rule3_all)):
-    
-    if len(df_rule3_all.loc[row,'Output'])!=0:
-        df_show3 = df_show3.append(df_rule3_all.loc[row,:])
-
-# reset the index
-df_show3.reset_index(inplace=True)
-df_show3.drop('index',axis=1,inplace=True)        
-#%%
-prep_dict = dict()
-dis_dict = dict()
-dis_list = []
-# iterating over all the sentences
-for i in range(len(df_show3)):
-    # sentence containing the output
-    sentence = df_show3.loc[i,'Sent']
-    name = df_show3.loc[i,"Name"]
-    # output of the sentence
-    output = df_show3.loc[i,'Output']
-    # iterating over all the outputs from the sentence
-    for sent in output:
-        # separate subject, verb and object
-        sentences = nlp(sent)
-        for token in sentences:
-            if token.pos_ == "ADP":
-                i = token.i
-        n1, p, n2 = str(sentences[:i]).strip(),str(sentences[i]).strip(),str(sentences[i+1:]).strip()
-        # append to list, along with the sente, doc[ince
-        dis_dict = {'Name':name,'Sent':sentence,'Capture':sent,'Noun1':n1,'Preposition':p,'Noun2':n2}
-        dis_list.append(dis_dict)
-        
-        # counting the number of sentences containing the verb
-        prep = sent.split()[1]
-        if prep in prep_dict:
-            prep_dict[prep]+=1
-        else:
-            prep_dict[prep]=1
-df_sep3= pd.DataFrame(dis_list)
-#%%
-df_sep3.drop_duplicates(subset = ['Name', 'Sent','Capture' ,'Noun1', 'Preposition', 'Noun2'], keep = "first", inplace = True)
-#%%
-from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-analyser = SentimentIntensityAnalyzer()
-def sentiment_analyzer_scores(sentence):
-    score = analyser.polarity_scores(sentence)
-    return score
-#%%
-for index,row in df_sep3.iterrows():
-    print(index)
-    text = getattr(row,'Sent')
-    score = sentiment_analyzer_scores(text)
-    df_sep3.loc[index, 'Neg'] = score['neg']
-    df_sep3.loc[index, 'Neu'] = score['neu']
-    df_sep3.loc[index, 'Pos'] = score['pos']
-    df_sep3.loc[index, 'Com'] = score['compound']
-#%%
-Noun11 = df_sep3.groupby("Noun1").size()
-#%%
-noun_list = ["lack","Lack","challenge","challenges","lot","lots","competition","coordination","wide variety","variety","Unsustainable extraction"
-             "weak rule", "rule","strong concern","storage hydropower","set","sets","rights","right","rules","rapid pace","reporting","responsibililty",
-             "potential impacts","questions", "problems","primary driver","pandemic","key issues","insufficient inclusion","impact","impacts",
-             "huge challenge","cooperation","concern","concerns","climate","big changes","big problem","Third issues","terms","relations",
-             "quality","profusion","major challenges","delays","respect","understanding","issue","issues",
-             "delays", "growth"]
-dataframe_lists = []
-for nouns in noun_list:
-    lack = df_sep3[df_sep3["Noun1"] == nouns][['Name','Sent','Capture','Noun1','Noun2']].dropna()
-    lack['Noun2'].replace('', np.nan, inplace=True)
-    lack.dropna(subset=['Noun2'], inplace=True)
-    dataframe_lists.append(lack)
-    
-#%%
-refine1 = pd.concat(dataframe_lists)
-#%%
-interesting_nouns = {"pandemic","COVID","economic growth","forest","flood waters","infrastructural interventions","flash floods","floosing",
-                     "Urbanisation","urbanisation","population","drought","forest","climate change","economic development","data sharing",
-                     "pollution","saline intrusion","bio-diversity","fisheries","market forces","information sharing","housing development","agriculture development","Industrial development",
-                     "floods","hydropower","hydropower development"}
-dataframe_list3 = []
-for name in df2.Name.to_list():
     local_list = []
-    sub = df2[df2['Name'] == name]
-    for sent in sub.Sent:
-        doc = nlp(sent)
-        for ent in doc.noun_chunks:
-            if ent.text in interesting_nouns:
-                print(ent.text)
-                local_list.append(ent.text)
-    name_list = [name for i in range(len(local_list))]
-    dict1 = {'Name':name_list,'Noun2':local_list}
-    local_data =pd.DataFrame(dict1)
-    dataframe_list3.append(local_data)
+    matches = matcher(doc)
+    if matches:
+        spans = [doc[start:end] for _, start, end in matches]
+        for span in spacy.util.filter_spans(spans):
+            local_list.append(re.sub("([Tt]he\s|\b[Tt]he\b)","",span.text))
+    local_dict = {"Name":name, "Sent":sent,"Captures":local_list}
+    dic_list.append(local_dict)
+#%%      
+df_first_select = pd.DataFrame(dic_list)
 #%%
-df_sep4= pd.concat(dataframe_list3)
-df_sep4.drop_duplicates(subset = ["Name","Noun2"], keep = "first", inplace = True)      
+cond1 = df2['Sent'].isin(df_first_select['Sent'])
+df2.drop(df2[cond1].index, inplace = True)
 #%%
-dataframe_list_final = []
-for name in refine1.Name.unique():
-    local_list = []
-    local_list2= []
-    local_list3 = []
-    local_list4 = []
-    sub = refine1[refine1["Name"] == name]
-    noun2 = sub['Noun2'].to_list()
-    sub2 = df_sep4[df_sep4['Name'] == name]
-    noun21 = sub2["Noun2"].to_list()
-    cpature = sub["Capture"].to_list()
-    noun1 = sub["Noun1"].to_list()
-    local_list2.extend(cpature)
-    local_list2.extend(noun21)    
-    local_list.extend(noun2)
-    local_list.extend(noun21)
-    local_list3.extend(noun1)
-    local_list3.extend(noun21)    
-    local_list4 = ["of" for i in range(len(local_list2))]
-    name_list = [name for i in range(len(local_list))]
-    dict1= {"Name" : name_list,"Noun1":local_list3,"Preposition":local_list4,"Complete Challenge":local_list2, "Challenge":local_list}
-    localdf = pd.DataFrame(dict1)
-    dataframe_list_final.append(localdf)
+file1 = open("Question1_Extractions.txt","w",encoding = 'utf-8')
+for index,row in df_first_select.iterrows():
+    elements = getattr(row,"Captures")
+#     for el in elements:
+# file1.write(el)
+# file1.write("\n")
 #%%
-df_final = pd.concat(dataframe_list_final)
+file1.close()         
 #%%
-dict_names = {
-"Jenna Shinen":["Government","US"],
-"Aymeric Roussel":["Government","Cambodia"],
-"Angela Hogg":["Int Dev","US"],
-"Anders Imboden":["Int Dev","Laos"],
-"Thomas Parks (Country Representative)":["Int Dev","US"],
-"Christian Engler":["Int Dev","Laos"],
-"Jake Brunner":["Int Dev","Hanoi"],
-"Dr Pech Sokhem":["Academic","Cambodia"],
-"Drs Sonali Sellamuttu":["Int Dev","Sri Lanka"],
-"Suon Seng":["Int Dev","Cambodia"],
-"Douangkham Singhanouvong":["Academic","Laos"],
-"Dr. John Dore (Bangkok)":["Int Dev","Thailand"],
-"Prof. LU Xing":["Academic","China"],
-"Assist. Prof. Kanokwan Monorom":["Academic","Thailand"],
-"Ren Peng":["Academic","China"],
-"Prof. FENG Yan":["Academic","China"],
-"Dr Zhong Yong":["Int Dev","China"],
-"Mr TEK Vannara":["NGO","Cambodia"],
-"Dr An Pich Hatda (CEO)":["Int Dev","Laos"],
-"TIAN Fuqiang":["Academic","China"],
-"Diana Suhardiman":["Academic","Sri Lanka"],
-"Dr POONPAT Leesombatpiboon":["Government","Thailand"],
-"Robert Allen Jr":["Private","Laos"],
-"HE Te Navuth":["Int Dev","Cambodia"],
-"Mr Niwat Roykaew":["Int Dev","Thailand"],
-"Dr Laurent Umans":["Government","Vietnam"],
-"Messrs. Hisaya Hirose and Takahiro Suenaga":["Government","Japan"]}
+from spacy.matcher import PhraseMatcher
+matcher = PhraseMatcher(nlp.vocab)
 #%%
-df_final = df_final.reset_index()
-for index, row in df_final.iterrows():
+enabling_words = [
+"stakeholder limited information                                         " 
+,"lack of dialogue                                                        "
+,"collaboration                                                           "
+,"lack of benefic sharing                                                 "
+,"lack of data and information                                            "
+,"no communication between upstream government and downstream communities "
+,"terms of data sharing                                                   "
+,"a data sharing platform                                                 "
+,"information sharing                                                     "
+,"transparency                                                            "
+,"also large transparency challenges                                      "
+,"high quality data                                                       "
+,"information overload                                                    "
+,"data                                                                    "
+,"information overload                                                    "
+,"asymmetric information availability on floods and droughts              "
+,"transparent data platforms                                              "
+]
+enabling_words_pat =   [nlp.make_doc(text.strip()) for text in enabling_words]
+
+enabling_words1 = [
+"a lack of investment                                              "
+,"funding instruments for environmental protection and wetlands     "
+,"more attractive source of financing                               "
+,"funding",
+"investment"
+]
+enabling_words2 = [
+"irreversible effects on environment and biodiversity       "
+,"deforestation                                              "
+,"pollution                                                  "
+,"natural resource management                                "
+,"natural resources degradation                              "
+,"deforestation                                              "
+,"land concessions                                           "
+,"illegal logging                                            "
+,"hydropower expansion                                       "
+,"floods                                                     "
+,"reduced flood season                                       "
+,"juvenile fish growth                                       "
+,"ecosystem degradation                                      "
+,"a focus on transboundary environmental issues challenges   "
+,"climate change                                             "
+,"risks for flood and drought                                "
+,"pollution                                                  "
+,"water management                                           "
+,"climate change                                             "
+,"marine pollution                                           "
+,"disaster reduction                                         "
+,"severe pollution                                           "
+,"lots of rainfall                                           "
+,"summer                                                     "
+,"drought                                                    "
+,"economic losses of natural resource utilization            "
+,"flood                                                      "
+]
+enabling_words3 = [
+"lack of benefic sharing                              "
+,"different needs                                      "
+,"different amount of power                            "
+,"very little room for other voices                    "
+,"conflict                                             "
+,"power systems                                        "
+,"questions of coordination and planning               "
+,"issues of national sovereignty                       "
+,"a lack of support                                    "
+,"a lack of coordination                               "
+,"coordination from development partners               "
+,"a lack of unity                                      "
+,"this lack of coordination                            "
+,"competition for water resources                      "
+,"unequal relations                                    "
+,"own economic priorities                              "
+,"challenges in geo political interest                 "
+,"no agreements on problems                            "
+,"too many actors governmentsand environment           "
+,"infrastructural development                          "
+,"common vision                                        "
+,"common language                                      "
+,"a lack of joint vision                               "
+,"common vision                                        "
+,"different objectives                                 "
+,"lack of understanding                                "
+,"common standards                                     "
+,"china dispute                                        "
+,"field of power relations                             "
+,"geopolitics                                          "
+,"different sets of interests and motivations          "
+,"quality of growth                                    "
+,"a lot of geo political competition                   "
+,"lack of shared management                            "
+,"geopolitics                                          "
+,"political competition                                "
+,"different development                                "
+,"divergent interests                                  "
+,"sharing of different benefits                        "
+,"differing development plans                          "
+,"strong friendship for decades                        "
+,"partnership for shared prosperity                    "
+,"conflict of interest                                 "
+,"adaptation                                           "
+,"no equitable sharing of costs and benefits           "
+,"water sharing                                        "
+
+]
+enabling_words4 = [
+"industrial development                                     "
+,"agricultural development                                   "
+,"experienced rapid growth                                   "
+,"wide variety of infrastructural interventions              "
+,"very rapid pace of development                             "
+,"hydropower development                                     "
+,"real development path                                      "
+,"strong urbanisation trends                                 "
+,"economic growth                                            "
+,"a variety of technical sustainable development issues      "
+,"a variety of technical challenges                          "
+,"infrastructure                                             "
+,"sand mining                                                "
+,"an imbalance between economic development                  "
+,"mining                                                     "
+,"regional stability for development                         "
+,"quality economic growth                                    "
+,"a lot of development                                       "
+,"infrastructure                                             "
+,"Rapid economic development                                 "
+,"natural resource declines                                  "
+,"economic development over environmental conservation       "
+,"no limits to development                                   "
+,"rapid socio economic development                           "
+,"still bottlenecks on transportation connectivity           "
+,"economic growth                                            "
+,"quality of growth                                          "
+]
+enabling_words5 = [
+"private sector                                                 "
+,"market forces                                                 "
+,"theory civil society                                          "
+,"non state actors                                              "
+,"support for civil society                                     "
+,"Inclusion of civil society and private sector                 "
+,"disconnect between government and civil society               "
+,"absent civil society                                          "
+,"weak rule of law                                              "
+,"weak governance                                               "
+,"civil society                                                 "
+,"insufficient inclusion of civil society                       "
+,"inclusive participation from civil society and private sector "
+,"additional institutional capacity                             "
+,"Politically connected corporations                            "
+,"human rights                                                  "
+,"insufficient focus on lower level issues                      "
+,"restrict civil society activity                               "
+]
+enabling_words6 = [ 
+"governance issues                                   " 
+,"rule of law                                        "
+,"respect for human rights                           "
+,"urban job losses                                   "
+,"national policies                                  "
+,"much space for local knowledge                     "
+,"comprehensive planning                             "
+,"no systematic analysis of findings and contingency "
+,"reporting                                          "
+,"monitoring of dam safety issues                    "
+,"legally binding aspects                            "
+,"policy                                             "
+,"way link between plans                             "
+,"relations between policies                         "
+,"reliance on national exports and national budgets  "
+,"new standards to manufacturing and food            "
+,"covid                                              "
+,"rule of law                                        "
+,"lots of procedures and documents                   "
+,"regulation                                         "
+,"unclear laws                                       "
+
+]
+enabling_words7 = [
+"profusion of cooperation platforms                   "
+,"new cooperation mechanism                            "
+,"coherent coordination between cooperative mechanisms "
+,"competition between various regional mechanisms      "
+,"different cooperative agreements                     "
+,"various multinational mechanisms                     "
+,"several cooperation frameworks                       "
+,"duplications between mandates                        "
+,"various cooperation frameworks                       "
+,"various platformsand environment                     "
+,"infrastructural development                          "
+,"meeting                                              "
+,"frameworks                                           "
+,"multiple frameworks                                  "
+,"lots of meetings                                     "
+,"lots of frameworks                                   "
+,"various regional cooperation frameworks              "
+,"number of cooperation frameworks                     "
+,"many regional cooperation mechanisms                 "
+]
+enabling_words8 = [
+"a history of conflict and war       "
+,"ageing population                   "
+,"very large population               "
+,"indigenous people                   "
+,"population growth                   "
+,"poverty                             "
+,"unique traditions                   "
+,"cultures                            "
+,"local values                        "
+,"peoples livelihoods                 "
+,"corruption                          "
+,"participation of people             "
+,"population growth                   "
+,"foster inclusive growth             "
+
+]
+enabling_words9 = [
+"pandemic             "
+,"covid                "
+,"infectious diseases  "
+]
+enabling_words10 = [
+"expert approaches                          "    
+,"trust of science                          "
+,"production of knowledge and adaptability  "
+,"research                                  "
+,"universities                              "
+,"implementation of research                "
+,"science                                   "
+,"more research                             "
+
+]
+preventing_words1 = [
+"distrust               " 
+,"trust                  "
+,"confidence             "
+,"commitment             "
+,"emotional intelligence "
+,"political will         "
+
+]
+enabling_words_pat =  [nlp.make_doc(text.strip()) for text in enabling_words]
+enabling_words1_pat =   [nlp.make_doc(text.strip()) for text in enabling_words1]
+enabling_words2_pat =   [nlp.make_doc(text.strip()) for text in enabling_words2]
+enabling_words3_pat =   [nlp.make_doc(text.strip()) for text in enabling_words3]
+enabling_words4_pat =   [nlp.make_doc(text.strip()) for text in enabling_words4]
+enabling_words5_pat =   [nlp.make_doc(text.strip()) for text in enabling_words5]
+enabling_words6_pat =   [nlp.make_doc(text.strip()) for text in enabling_words6]
+enabling_words7_pat =   [nlp.make_doc(text.strip()) for text in enabling_words7]
+enabling_words8_pat =   [nlp.make_doc(text.strip()) for text in enabling_words8]
+enabling_words9_pat =   [nlp.make_doc(text.strip()) for text in enabling_words9]
+enabling_words10_pat =  [nlp.make_doc(text.strip()) for text in enabling_words10]
+preventing_words1_pat = [nlp.make_doc(text.strip()) for text in preventing_words1]
+
+matcher.add("Information", None, *enabling_words_pat)
+matcher.add("Funding", None, *enabling_words1_pat)
+matcher.add("Climate", None, *enabling_words2_pat)
+matcher.add("Power", None, *enabling_words3_pat)
+matcher.add("Economic", None, *enabling_words4_pat)
+matcher.add("Private", None, *enabling_words5_pat)
+matcher.add("law", None, *enabling_words6_pat)
+matcher.add("platforms", None, *enabling_words8_pat)
+matcher.add("citizen", None, *enabling_words8_pat)
+matcher.add("pandemic", None, *enabling_words9_pat)
+matcher.add("research", None, *enabling_words10_pat)
+matcher.add("Trust", None, *preventing_words1_pat)
+
+local_dataframe1 = []
+for index, row in answer1.iterrows():
+    answer7 = getattr(row, "Answer1_clean")
+    answer7 = answer7.lower()
     name = getattr(row, "Name")
-    name1 = re.sub(",","",name)
-    print(name1)
-    df_final.loc[index, "Country"] = dict_names[name1][1]
-    df_final.loc[index, "Type"] = dict_names[name1][0]
-#%%
-
-print(df_final["Complete Challenge"].value_counts())
-
-#%%
-list1= []
-for challenge in df_final["Complete Challenge"].to_list():
-    doc = nlp(challenge)
-    for token in doc:
-        list1.append(token.text)
-#%%
-doct = {}
-
-for ele in list1:
-    if ele in doct.keys():
-        doct[ele] += 1
-    else:
-        doct[ele] = 1
-#%%        
-df_final = df_final[~df_final["Challenge"].isin(["sustainable development","technical sustainable development issues","sustainable development issues"])]
-        
-#%%
-from textacy import preprocessing
-
-def replace_economic(sentence):
-    # sentence = sentence.strip()
-    # if "economic development" in sentence:
-    #     sentence.replace("economic development", "growth")
-    # if "growth" in sentence:
-    #     sentence.replace("growth","economic growth")
-    return sentence.strip()
-#%%
-df_final["Complete Challenge"] = df_final["Complete Challenge"].apply(replace_economic)
-#%%
-for index, row in df_final.iterrows():
-    challege = getattr(row, "Challenge")
-    complete_challenge =getattr(row, "Complete Challenge")
-    if "economic development" in challege:
-        df_final.loc[index, "Challenge_final"] = "growth"
-        df_final.loc[index, "Complete Challenge1"] = complete_challenge.replace("economic development", "growth")
-    else:
-        df_final.loc[index, "Challenge_final"] = challege
-        df_final.loc[index, "Complete Challenge1"] = complete_challenge
+    local_list = []
+    doc = nlp(answer7)
+    matches = matcher(doc)
+    if matches:
+        for match_id, start, end in matches:
+            string_id = nlp.vocab.strings[match_id]  # Get string representation
+            span = doc[start:end]  # The matched span
+            print(match_id, string_id, start, end, span.text)
+            if string_id == "Information":
+                local_list.append("Communication, Transperancy & Information Sharing")
+            elif string_id == "Funding":
+                local_list.append("Funding & Investment")
+            elif string_id == "Climate":
+                local_list.append("Climate Change and its Consequences")
+            elif string_id == "Power":
+                local_list.append("Collaboration, Geopolitics & Power Asymmtery")
+            elif string_id == "Economic":
+                local_list.append("Economic Growth, Development & Urbanisation")
+            elif string_id == "Private":
+                local_list.append("Civil Society and Private Sector")
+            elif string_id == "law":
+                local_list.append("Policies, Planning and Laws")
+            elif string_id == "citizen":
+                local_list.append("Citizen, Society & Population")
+            elif string_id == "pandemic":
+                local_list.append("Pandemic")
+            elif string_id == "research":
+                local_list.append("Research")
+            elif string_id == "Trust":
+                local_list.append("Trust & Commitment")
+            elif string_id == "platforms":
+                local_list.append("Meetings and Frameworks")
+    names = [name for i in range(len(local_list))]
+    local_dataframe = pd.DataFrame(names,local_list)
+    local_dataframe1.append(local_dataframe)
         #%%
-for index, row in df_final.iterrows():
-    challege = getattr(row, "Challenge_final")
-    complete_challenge =getattr(row, "Complete Challenge1")
-    if "growth" in challege:
-        df_final.loc[index, "Challenge_final"] = "economic growth"
-        df_final.loc[index, "Complete Challenge1"] = complete_challenge.replace("growth", "economic growth")
-    else:
-        df_final.loc[index, "Challenge_final"] = challege
-        df_final.loc[index, "Complete Challenge1"] = complete_challenge
+big_df = pd.concat(local_dataframe1)
 #%%
-df_final["Challenge_final"] =  df_final["Challenge_final"].replace("floods", "climate change") .replace("flash floods", "climate change").replace("drought", "climate change").replace("coherent coordination","coordination")   
+big_df = big_df.reset_index()
 #%%
-df_final["Complete Challenge1"] =  df_final["Complete Challenge1"].replace("floods", "climate change") .replace("flash floods", "climate change").replace("drought", "climate change").replace("coherent coordination","coordination")    
-        
+big_df.columns = ["Taxonomy","Name"]
 #%%
-dictionary ={"rules":"rule",
-             "relations":"relation",
-             "laws":"law",
-             "focusses":"focus",
-             "concerns":"concern",
-             "agreements":"agreement",
-             "challenges":"challenge",
-             "lots":"lot",
-             "changes":"change",
-             "impact":"impacts",
-             "level":"levels",
-             "problems":"problem",
-             "question":"questions",
-             "set":"sets",
-             "term":"terms",
-             
-             }
+big_df.drop_duplicates(subset = ["Taxonomy","Name"], keep = "first", inplace= True)
 #%%
-for index, row in df_final.iterrows():
-    noun = getattr(row, "Noun1")
-    noun = noun.strip()
-    if noun in dictionary.keys():
-        df_final.loc[index, "Noun1"] = dictionary[noun]
+big_df.to_csv("Question1_Final_Data.csv",index = False)
 #%%
-graph_Data = df_final[["Noun1", "Preposition","Challenge_final"]] 
-graph_Data.columns = ["Source", "Edge","Target"]       
-        
-        #%%
-#%%
-graph_Data["Target"] = graph_Data["Target"].replace(" ",np.nan)
-#%%
-graph_Data= graph_Data.dropna(axis =1 )
-#%%
-import networkx as nx
-G=nx.from_pandas_edgelist(graph_Data[graph_Data['Source'].isin(["challenge", "problems", "issues", "problem"])], "Source", "Target", 
-                          edge_attr=True, create_using=nx.MultiDiGraph())
-#%%
-import matplotlib.pyplot as plt
-
-plt.figure(figsize=(12,12))
-
-pos = nx.spring_layout(G)
-nx.draw(G, with_labels=True, node_color='skyblue', edge_cmap=plt.cm.Blues, pos = pos)
-plt.show()      
-#%%
-list_c = ["floods", "drought","rainfall","flood pulse"]
-preposition = ["of" for i in range(len(list_c))]
-climat = ["climate change" for i in range(len(list_c))]
-
-dict1 = {"Source":climat, "Edge":preposition,"Target":list_c}
-
-dt = pd.DataFrame(dict1)
-#%%
-# graph_Data = df_final[["Noun1", "Preposition","Challenge_final"]] 
-# graph_Data.columns = ["Source", "Edge","Target"]       
-graph_Data = dt       
-        #%%
-#%%
-graph_Data["Target"] = graph_Data["Target"].replace(" ",np.nan)
-#%%
-graph_Data= graph_Data.dropna(axis =1 )
-#%%
-import networkx as nx
-G=nx.from_pandas_edgelist(graph_Data, "Source", "Target", 
-                          edge_attr=True, create_using=nx.MultiDiGraph())
-#%%
-import matplotlib.pyplot as plt
-
-plt.figure(figsize=(12,12))
-
-pos = nx.spring_layout(G)
-nx.draw(G, with_labels=True, node_color='skyblue', edge_cmap=plt.cm.Blues, pos = pos)
-plt.show()      
-
-#%%
-other_essential_nounrs = df_final[df_final["Challenge"].isin(["challenges, problems, issues, problem"])]
-
-#%%
-other_nouns = df_final.groupby(["Challenge_final"]).size().reset_index()
-#%%
-other_nouns = other_nouns[~other_nouns['Challenge_final'].isin(["climate change","economic growth","countries","development",
-                                                               "change","economy","information","interests","unity","water","understanding","support","summer","river","profusion"])]
-
-#%%
-final= other_nouns.groupby(["Challenge_final"]).size().reset_index()
-#%%
-  
-nouns1 = {}
-for sentence in df_final['Complete Challenge1'].to_list():
-    doc = nlp(sentence)
-    for end in doc.noun_chunks:
-        end = str(end).strip()
-        if end == "coherent coordination":
-            end = re.sub("coherent coordination","coordination",end)
-        if end in ["drought","flood pulse"]:
-            end = "climate change"
-        if end in nouns1.keys():
-            nouns1[end] += 1
-        else:
-            nouns1[end] = 1
-
-#%%
-word_count = pd.DataFrame(list(nouns1.items()),columns = ['Word','Count'])             
-#%%
-word_count1 = word_count[word_count["Word"].isin(["coordination","economic growth","climate change"])]
-#%%    
-word_count2 = word_count[word_count["Word"].isin(["lack","impacts","impact" ,"variety","rule"])]
-#%%
-
-word_count2.to_csv("Word Count2.csv")
-#%%        
